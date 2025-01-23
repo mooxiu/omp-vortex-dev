@@ -27,5 +27,7 @@ ninja install
 ### Install Vortex
 Follow the instruction of https://github.com/vortexgpgpu/vortex.
 
+Vortex kernel and runtime libraries: $HOME/vortex/kernel
+
 
 ## Reproduce Linking Issue

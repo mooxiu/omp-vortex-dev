@@ -39,7 +39,7 @@ Vortex kernel and runtime libraries: `$HOME/vortex/`
 
 ## Reproduce Linking Issue
 
-In `simple_offloading_omp`, run `make omp_test` can reproduce the same linking error:
+Under `simple_offloading_omp` directory, run `make omp_test` can reproduce the same linking error:
 
 ```sh
 ld.lld: error: unable to find library -lc

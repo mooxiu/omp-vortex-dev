@@ -1,5 +1,6 @@
 LLVM_PATH=${HOME}/llvm
-VORTEX_KERNEL=${HOME}/vortex/kernel
+VORTEX_KERNEL=${HOME}/vortex
+VORTEX_HOME=${HOME}/Documents/vortex
 TOOLS_PATH=${HOME}/tools
 
 .PHONY: omp_test
@@ -26,8 +27,9 @@ omp_test: clean
 		-Xopenmp-target=vortex -lm \
 		-Xopenmp-target=vortex -lc \
 		-Xopenmp-target=vortex -lclang_rt.builtins-riscv64.a \
-		-Xopenmp-target=vortex -Wl,-Bstatic,--gc-sections,-T,${VORTEX_KERNEL}/scripts/link64.ld,--defs simple_offloading.cc \
-		-o simple_offloading 
+		-Xopenmp-target=vortex -Wl,-Bstatic,--gc-sections,-T${VORTEX_HOME}/kernel/scripts/link64.ld,--defs \
+		simple_offloading.cc \
+		-o simple_offloading
 
 
 .PHONY: simple_offloading

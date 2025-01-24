@@ -14,7 +14,7 @@ cd /your/path/to/llvm
 mkdir build && cd build
 
 cmake -G "Ninja" \
-  -DLLVM_ENABLE_PROJECTS="clang;openmp" \
+  -DLLVM_ENABLE_PROJECTS="clang;openmp;lld" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$HOME/llvm \
   ../llvm
@@ -27,7 +27,25 @@ ninja install
 ### Install Vortex
 Follow the instruction of https://github.com/vortexgpgpu/vortex.
 
-Vortex kernel and runtime libraries: $HOME/vortex/kernel
+Install Vortex kernel:
+```sh
+../configure --xlen=64 --tooldir=$HOME/tools --prefix=$HOME/vortex
+make -s
+make install
+```
+
+Vortex kernel and runtime libraries: `$HOME/vortex/`
 
 
 ## Reproduce Linking Issue
+
+In `simple_offloading_omp`, run `make omp_test` can reproduce the same linking error:
+
+```sh
+ld.lld: error: unable to find library -lc
+ld.lld: error: unable to find library -lm
+ld.lld: error: unable to find library -lclang_rt.builtins-riscv64
+clang: error: ld.lld command failed with exit code 1 (use -v to see invocation)
+${LLVM_INSTALL_PATH}/bin/clang-linker-wrapper: error: 'clang' failed
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+```

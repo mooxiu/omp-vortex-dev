@@ -16,7 +16,7 @@ int main() {
     }
 
     // C[i] = A[i] + B[i]
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: A[0:SIZE], B[0:SIZE]) map(from: C[0:SIZE])
     for (i = 0; i < SIZE; i++) {
         // std::cout << "get " << omp_get_thread_num() << std::endl;
         C[i] = A[i] + B[i];

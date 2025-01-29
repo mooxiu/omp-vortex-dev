@@ -1,0 +1,66 @@
+haruka@haruka-ubuntu ~/D/w/o/simple_offloading_omp (main)> make hello
+/home/haruka/llvm/bin/clang++ \
+        -fopenmp \
+        -fopenmp-targets=vortex \
+        -Xopenmp-target=vortex -invalid-option \
+        -v hello.cpp -o hello 
+clang version 18.1.7 (git@github.com:mooxiu/llvm.git 3fcb21a600ba8b0b603c93b90db978640c052323)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /home/haruka/llvm/bin
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/13
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+ "/home/haruka/llvm/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -emit-llvm-uselists -dumpdir hello- -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name hello.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/home/haruka/Documents/workspace/omp-vortex-dev/simple_offloading_omp -v -fcoverage-compilation-dir=/home/haruka/Documents/workspace/omp-vortex-dev/simple_offloading_omp -resource-dir /home/haruka/llvm/lib/clang/18 -internal-isystem /home/haruka/llvm/lib/clang/18/include/llvm_libc_wrappers -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward -internal-isystem /home/haruka/llvm/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -internal-isystem /home/haruka/llvm/lib/clang/18/include -internal-isystem include -fdeprecated-macro -ferror-limit 19 -fopenmp -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fcolor-diagnostics -disable-llvm-passes -fopenmp-targets=riscv64-unknown-elf -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o /tmp/hello-46f3c1.bc -x c++ hello.cpp
+clang -cc1 version 18.1.7 based upon LLVM 18.1.7 default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "/include"
+ignoring nonexistent directory "include"
+ignoring duplicate directory "/home/haruka/llvm/lib/clang/18/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /home/haruka/llvm/lib/clang/18/include/llvm_libc_wrappers
+ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13
+ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13
+ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward
+ /home/haruka/llvm/lib/clang/18/include
+ /usr/local/include
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+ "/home/haruka/llvm/bin/clang-18" -cc1 -triple riscv64-unknown-elf -aux-triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -dumpdir hello- -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name hello.cpp -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -nostdsysteminc -target-cpu generic-rv64 -target-feature +m -target-feature +a -target-feature +c -target-feature -d -target-feature -e -target-feature -f -target-feature -h -target-feature -smaia -target-feature -smepmp -target-feature -ssaia -target-feature -svinval -target-feature -svnapot -target-feature -svpbmt -target-feature -v -target-feature -xcvalu -target-feature -xcvbi -target-feature -xcvbitmanip -target-feature -xcvelw -target-feature -xcvmac -target-feature -xcvmem -target-feature -xcvsimd -target-feature -xsfvcp -target-feature -xsfvfnrclipxfqf -target-feature -xsfvfwmaccqqq -target-feature -xsfvqmaccdod -target-feature -xsfvqmaccqoq -target-feature -xtheadba -target-feature -xtheadbb -target-feature -xtheadbs -target-feature -xtheadcmo -target-feature -xtheadcondmov -target-feature -xtheadfmemidx -target-feature -xtheadmac -target-feature -xtheadmemidx -target-feature -xtheadmempair -target-feature -xtheadsync -target-feature -xtheadvdot -target-feature -xventanacondops -target-feature -za128rs -target-feature -za64rs -target-feature -zawrs -target-feature -zba -target-feature -zbb -target-feature -zbc -target-feature -zbkb -target-feature -zbkc -target-feature -zbkx -target-feature -zbs -target-feature -zca -target-feature -zcb -target-feature -zcd -target-feature -zce -target-feature -zcf -target-feature -zcmp -target-feature -zcmt -target-feature -zdinx -target-feature -zfa -target-feature -zfh -target-feature -zfhmin -target-feature -zfinx -target-feature -zhinx -target-feature -zhinxmin -target-feature -zic64b -target-feature -zicbom -target-feature -zicbop -target-feature -zicboz -target-feature -ziccamoa -target-feature -ziccif -target-feature -zicclsm -target-feature -ziccrse -target-feature -zicntr -target-feature -zicond -target-feature -zicsr -target-feature -zifencei -target-feature -zihintntl -target-feature -zihintpause -target-feature -zihpm -target-feature -zk -target-feature -zkn -target-feature -zknd -target-feature -zkne -target-feature -zknh -target-feature -zkr -target-feature -zks -target-feature -zksed -target-feature -zksh -target-feature -zkt -target-feature -zmmul -target-feature -zvbb -target-feature -zvbc -target-feature -zve32f -target-feature -zve32x -target-feature -zve64d -target-feature -zve64f -target-feature -zve64x -target-feature -zvfh -target-feature -zvfhmin -target-feature -zvkb -target-feature -zvkg -target-feature -zvkn -target-feature -zvknc -target-feature -zvkned -target-feature -zvkng -target-feature -zvknha -target-feature -zvknhb -target-feature -zvks -target-feature -zvksc -target-feature -zvksed -target-feature -zvksg -target-feature -zvksh -target-feature -zvkt -target-feature -zvl1024b -target-feature -zvl128b -target-feature -zvl16384b -target-feature -zvl2048b -target-feature -zvl256b -target-feature -zvl32768b -target-feature -zvl32b -target-feature -zvl4096b -target-feature -zvl512b -target-feature -zvl64b -target-feature -zvl65536b -target-feature -zvl8192b -target-feature -experimental-zacas -target-feature -experimental-zcmop -target-feature -experimental-zfbfmin -target-feature -experimental-zicfilp -target-feature -experimental-zicfiss -target-feature -experimental-zimop -target-feature -experimental-ztso -target-feature -experimental-zvfbfmin -target-feature -experimental-zvfbfwma -target-feature +relax -target-abi lp64 -msmall-data-limit 0 -debugger-tuning=gdb -fdebug-compilation-dir=/home/haruka/Documents/workspace/omp-vortex-dev/simple_offloading_omp -v -fcoverage-compilation-dir=/home/haruka/Documents/workspace/omp-vortex-dev/simple_offloading_omp -resource-dir /home/haruka/llvm/lib/clang/18 -internal-isystem /home/haruka/llvm/lib/clang/18/include/llvm_libc_wrappers -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward -internal-isystem /home/haruka/llvm/lib/clang/18/include -internal-isystem include -internal-isystem /home/haruka/llvm/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fvisibility=protected -fopenmp -fno-signed-char -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fcolor-diagnostics -fopenmp-is-target-device -fopenmp-host-ir-file-path /tmp/hello-46f3c1.bc -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o /tmp/hello-df95de.o -x c++ hello.cpp
+clang -cc1 version 18.1.7 based upon LLVM 18.1.7 default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "include"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "/include"
+ignoring duplicate directory "/home/haruka/llvm/lib/clang/18/include"
+ignoring duplicate directory "/home/haruka/llvm/lib/clang/18/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /home/haruka/llvm/lib/clang/18/include/llvm_libc_wrappers
+ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13
+ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/x86_64-linux-gnu/c++/13
+ /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/backward
+ /home/haruka/llvm/lib/clang/18/include
+ /usr/local/include
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+ "/home/haruka/llvm/bin/clang-offload-packager" -o /tmp/hello-a23d9a.out --image=file=/tmp/hello-df95de.o,triple=riscv64-unknown-elf,arch=,kind=openmp
+ "/home/haruka/llvm/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -dumpdir hello- -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name hello.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/home/haruka/Documents/workspace/omp-vortex-dev/simple_offloading_omp -v -fcoverage-compilation-dir=/home/haruka/Documents/workspace/omp-vortex-dev/simple_offloading_omp -resource-dir /home/haruka/llvm/lib/clang/18 -ferror-limit 19 -fopenmp -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcolor-diagnostics -fembed-offload-object=/tmp/hello-a23d9a.out -fopenmp-targets=riscv64-unknown-elf -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o /tmp/hello-3f2e24.o -x ir /tmp/hello-46f3c1.bc
+clang -cc1 version 18.1.7 based upon LLVM 18.1.7 default target x86_64-unknown-linux-gnu
+ "/home/haruka/llvm/bin/clang-linker-wrapper" --host-triple=x86_64-unknown-linux-gnu --wrapper-verbose --linker-path=/usr/bin/ld -- -z relro --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o hello /lib/x86_64-linux-gnu/Scrt1.o /lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/13 -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/lib -L/usr/lib /tmp/hello-3f2e24.o -lstdc++ -lm -lomp -lomptarget -lomptarget.devicertl -L/home/haruka/llvm/lib -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /lib/x86_64-linux-gnu/crtn.o
+ "/home/haruka/llvm/bin/clang" -o /tmp/hello.riscv64.native-75091e.img --target=riscv64-unknown-elf -march=native -O2 -Wl,--no-undefined /tmp/hello-3f2e24-riscv64-unknown-elf--7dac4d.o -v
+clang version 18.1.7 (git@github.com:mooxiu/llvm.git 3fcb21a600ba8b0b603c93b90db978640c052323)
+Target: riscv64-unknown-unknown-elf
+Thread model: posix
+InstalledDir: /home/haruka/llvm/bin
+ "/home/haruka/llvm/bin/ld.lld" --no-undefined /tmp/hello-3f2e24-riscv64-unknown-elf--7dac4d.o -Bstatic -L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib -L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib -L/home/haruka/llvm/lib/clang/18/lib/baremetal -lc -lm -lclang_rt.builtins-riscv64 -X -o /tmp/hello.riscv64.native-75091e.img
+ld.lld: error: unable to find library -lc
+ld.lld: error: unable to find library -lm
+ld.lld: error: unable to find library -lclang_rt.builtins-riscv64
+clang: error: ld.lld command failed with exit code 1 (use -v to see invocation)
+/home/haruka/llvm/bin/clang-linker-wrapper: error: 'clang' failed
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+make: *** [Makefile:9: hello] Error 1

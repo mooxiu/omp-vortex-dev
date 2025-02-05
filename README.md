@@ -104,3 +104,37 @@ This means it's very likely that `-Xopenmp-target=vortex` does not work at all.
 
 But why this does not work and how can we assign to the  `ld.lld` the correct place to find the library?
 
+#### Can we manually run the link?
+In the above analysis, the linker fails to find some of libraries, but can we manually link it?
+
+This is failed command, notice that it is trying to find libraries which does not exist:
+```sh
+ "/home/haruka/llvm/bin/ld.lld" \
+   --no-undefined /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o \
+   -Bstatic \
+   -L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib \
+   -L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib \
+   -L/home/haruka/llvm/lib/clang/18/lib/baremetal \
+   -lc -lm -lclang_rt.builtins-riscv64 \
+   -X -o /tmp/omp_test.riscv64.rv64imafd-0742e1.img
+```
+
+This is the changed:
+```sh
+> "/home/haruka/llvm/bin/ld.lld" --no-undefined /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o -Bstatic -L/home/haruka/tools/riscv64-gnu-toolchain/riscv64-unknown-elf/lib -L/home/haruka/tools/libcrt64/lib/baremetal -lc -lm -lclang_rt.builtins-riscv64 -X -o /tmp/omp_test.riscv64.rv64imafd-0742e1.img
+
+# Get this output 
+> 
+ld.lld: error: /home/haruka/tools/libcrt64/lib/baremetal/libclang_rt.builtins-riscv64.a(muldi3.S.o) is incompatible with /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o
+ld.lld: error: /home/haruka/tools/libcrt64/lib/baremetal/libclang_rt.builtins-riscv64.a(save.S.o) is incompatible with /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o
+ld.lld: error: /home/haruka/tools/libcrt64/lib/baremetal/libclang_rt.builtins-riscv64.a(restore.S.o) is incompatible with /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o
+
+# Check the ELF
+readelf -h /home/haruka/tools/libcrt64/lib/baremetal/libclang_rt.builtins-riscv64.a # simple_offloading_omp/docs/builtins-risc64-elf.log
+readelf -h /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o # simple_offloading_omp/docs/object.log
+```
+
+ELF info of the object is aligned with our expectation, but the output of `libclang_rt.builtins-riscv64.a` is more complicated, it has some contents has Class ELF32, which is not compatible with our output (`muldi3.S.o`, `save.S.o` and `restore.S.o`)
+
+
+

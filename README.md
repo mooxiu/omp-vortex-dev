@@ -14,7 +14,8 @@ cd /your/path/to/llvm
 mkdir build && cd build
 
 cmake -G "Ninja" \
-  -DLLVM_ENABLE_PROJECTS="clang;openmp;lld" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_ENABLE_RUNTIMES="openmp" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$HOME/llvm \
   ../llvm
@@ -137,4 +138,17 @@ readelf -h /tmp/omp_test-8e6193-riscv64-unknown-elf-rv64imafd-5e830f.o # simple_
 ELF info of the object is aligned with our expectation, but the output of `libclang_rt.builtins-riscv64.a` is more complicated, it has some contents has Class ELF32, which is not compatible with our output (`muldi3.S.o`, `save.S.o` and `restore.S.o`)
 
 
+## Proposed Partial Solution
+
+### Pass library to ld.lld paths
+I have tried many methods and still fail to let ld.lld to use the customized libraries.
+
+The failure part is in linking device code from object file to binary. If we can control this step separately, then we can serve our purpose:
+
+- in the openCL case, PoCL orchestrates the steps behind the scene
+- in openMP, clang is trying to do everything in one step and does not provide us space to control each step with fine granularity
+
+To fully solve this problem, we probably need to extend openMP.
+
+But as a partial solution, I'm trying to move our libraries into the default paths ld.lld is searching through.
 

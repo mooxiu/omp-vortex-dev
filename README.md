@@ -101,9 +101,8 @@ clang++: error: linker command failed with exit code 1 (use -v to see invocation
 ```
 ([Complete_log](./simple_offloading_omp/docs/hello.log))
 
-This means it's very likely that `-Xopenmp-target=vortex` does not work at all. 
+This means it's very likely that `-Xopenmp-target=vortex` does not work at all. We can add `-ccc-print-phases` to check the compilation phases (I have printed that out in `./simple_offloading_omp/compilation_phases.md`), and it turns out that `m` object, `c` object and `libclang_rt.builtins-riscv64.a` which are supposed to be the input of the device compilation phases are in host compilation phases(phase 2, 3 and 4).
 
-But why this does not work and how can we assign to the  `ld.lld` the correct place to find the library?
 
 #### Can we manually run the link?
 In the above analysis, the linker fails to find some of libraries, but can we manually link it?

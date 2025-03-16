@@ -152,3 +152,30 @@ To fully solve this problem, we probably need to extend openMP.
 
 But as a partial solution, I'm trying to move our libraries into the default paths ld.lld is searching through.
 
+By checking the error message, we can observe that `ld.lld` will look for `-lc`, `-lc` and `-lclang_rt.builtins-riscv64` in following places:
+```sh
+-L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unkn
+own-elf/lib 
+-L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib 
+-L/home/haruka/llvm/lib/clang/18/lib/baremetal 
+```
+
+Then I identified the locations of `libc.a`, `libm.a` and `libclang_rt.builtins-riscv64.a`, and copy the corresponding paths under the searching locations.
+```sh
+cp -r {HOME}/tools/riscv64-gnu-toolchain/riscv64-unknown-elf/ {HOME}/llvm/lib/clang-runtimes/riscv64-unknown-elf/ #this will include libc.a and libm.a
+cp -r {HOME}/tools/libcrt64/lib/ /home/haruka/llvm/lib/clang/18/ # this will inlcude libclang_rt.builtins-riscv64.a
+```
+
+Execute again, now we get the same error as above as we try to compile the mid output manually:
+```sh
+ld.lld: error: /home/haruka/llvm/lib/clang/18/lib/baremetal/libclang_rt.builtins-riscv64.a(muldi3.S.o) is incompatible with /tmp/main.cpp-riscv64-unknown-elf-rv64imaf-391d9a.o
+ld.lld: error: /home/haruka/llvm/lib/clang/18/lib/baremetal/libclang_rt.builtins-riscv64.a(save.S.o) is incompatible with /tmp/main.cpp-riscv64-unknown-elf-rv64imaf-391d9a.o
+ld.lld: error: /home/haruka/llvm/lib/clang/18/lib/baremetal/libclang_rt.builtins-riscv64.a(restore.S.o) is incompatible with /tmp/main.cpp-riscv64-unknown-elf-rv64imaf-391d9a.o
+```
+
+### What Now?
+
+There are 3 alternatives I can think about:
+1. Thinking about how to compile `muldi3.S.o`, `save.S.o` and `restore.S.o` into elf64
+2. Run the whole thing in riscv32
+3. Skip linking `libclang_rt.builtins-risc64.a` 

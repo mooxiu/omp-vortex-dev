@@ -18,6 +18,7 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_RUNTIMES="openmp" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$HOME/llvm \
+  -DLIBOMPTARGET_ENABLE_DEBUG=ON \
   ../llvm
 
 ninja
@@ -153,28 +154,99 @@ But as a partial solution, I'm trying to move our libraries into the default pat
 
 By checking the error message, we can observe that `ld.lld` will look for `-lc`, `-lc` and `-lclang_rt.builtins-riscv64` in following places:
 ```sh
--L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unkn
-own-elf/lib 
 -L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib 
 -L/home/haruka/llvm/lib/clang/18/lib/baremetal 
 ```
 
-Then I identified the locations of `libc.a`, `libm.a` and `libclang_rt.builtins-riscv64.a`, and copy the corresponding paths under the searching locations.
-```sh
-cp -r {HOME}/tools/riscv64-gnu-toolchain/riscv64-unknown-elf/ {HOME}/llvm/lib/clang-runtimes/riscv64-unknown-elf/ #this will include libc.a and libm.a
-cp -r {HOME}/tools/libcrt64/lib/ /home/haruka/llvm/lib/clang/18/ # this will inlcude libclang_rt.builtins-riscv64.a
+#### Directly pass the arguments through CLW
+`clang-linker-wrapper` is responsible for doing the link.
+In `clang/tools/clang-linker-wrapper/ClangLinkerWrapper.cpp`, the `main` function will reply on the `CmdArgs` from `Expected<StringRef> clang()` function.
+
+If we hard-coding our paths to the `CmdArgs` by doing:
+```
+CmdArgs.append("-L/home/haruka/llvm/bin/../lib/clang-runtimes/riscv64-unknown-elf/lib");
+CmdArgs.append("-L/home/haruka/llvm/lib/clang/18/lib/baremetal");
 ```
 
-Execute again, now we get the same error as above as we try to compile the mid output manually:
-```sh
-ld.lld: error: /home/haruka/llvm/lib/clang/18/lib/baremetal/libclang_rt.builtins-riscv64.a(muldi3.S.o) is incompatible with /tmp/main.cpp-riscv64-unknown-elf-rv64imaf-391d9a.o
-ld.lld: error: /home/haruka/llvm/lib/clang/18/lib/baremetal/libclang_rt.builtins-riscv64.a(save.S.o) is incompatible with /tmp/main.cpp-riscv64-unknown-elf-rv64imaf-391d9a.o
-ld.lld: error: /home/haruka/llvm/lib/clang/18/lib/baremetal/libclang_rt.builtins-riscv64.a(restore.S.o) is incompatible with /tmp/main.cpp-riscv64-unknown-elf-rv64imaf-391d9a.o
+We will find the file can be compiled.
+
+### The calling track
+In fact, CLW is been called twice.
+This can be observed by printing the Driver's address inside of Compilation (print `this`).
+
+Usually, in one compilation, the driver will only be called once, but in this specific offloading example, it has been called twice.
+By reconstructing the calling chain:
+- (1) clang Driver -> call CLW to link
+- (2) CLW creates a new clang Driver 
+- (3) the new Created clang Driver -> call CLW to link (device code)
+
+By observing the log, we can find our arguments in step (1), but in step (3) it disappers.
+
+Locating where (2) and (3) happens:
+- (2): this is done by execute the command line:
+```cpp
+SmallVector<StringRef, 16> CmdArgs{
+    *ClangPath,
+    "-o",
+    *TempFileOrErr,
+    Args.MakeArgString("--target=" + Triple.getTriple()),
+    Triple.isAMDGPU() ? Args.MakeArgString("-mcpu=" + Arch)
+                      : Args.MakeArgString("-march=" + Arch),
+    Args.MakeArgString("-" + OptLevel),
+    "-Wl,--no-undefined",
+};
+
+//....
+
+if (Error Err = executeCommands(*ClangPath, CmdArgs))
+  return std::move(Err);
 ```
 
-### What Now?
+- (3): this is done by `LinkerWrapper::ConstructJob`:
+```cpp
+ const char *Exec =
+      Args.MakeArgString(getToolChain().GetProgramPath("clang-linker-wrapper"));
+```
 
-There are 3 alternatives I can think about:
-1. Thinking about how to compile `muldi3.S.o`, `save.S.o` and `restore.S.o` into elf64
-2. Run the whole thing in riscv32
-3. Skip linking `libclang_rt.builtins-risc64.a` 
+By pass back and forth between the driver and CLW, we can finally make it compiled.
+
+## New Issue: 
+After running the compiled binary, I find it fail with SIGSEGV.
+
+By checking the log:
+```
+omptarget --> Init offload library!
+OMPT --> Entering connectLibrary (libomp)
+OMPT --> OMPT: Trying to load library libomp.so
+OMPT --> OMPT: Trying to get address of connection routine ompt_libomp_connect
+OMPT --> OMPT: Library connection handle = 0x730ce91c4b40
+OMPT --> Exiting connectLibrary (libomp)
+omptarget --> Loading RTLs...
+omptarget --> Attempting to load library 'libomptarget.rtl.x86_64.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.x86_64.so'!
+OMPT --> OMPT: Entering connectLibrary (libomptarget)
+OMPT --> OMPT: Trying to load library libomptarget.so
+OMPT --> OMPT: Trying to get address of connection routine ompt_libomptarget_connect
+OMPT --> OMPT: Library connection handle = 0x730ce903bc50
+OMPT --> Enter ompt_libomptarget_connect
+OMPT --> Leave ompt_libomptarget_connect
+OMPT --> OMPT: Exiting connectLibrary (libomptarget)
+omptarget --> Registered 'libomptarget.rtl.x86_64.so' with 4 plugin visible devices!
+omptarget --> Attempting to load library 'libomptarget.rtl.cuda.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.cuda.so'!
+TARGET CUDA RTL --> Unable to load library 'libcuda.so': libcuda.so: cannot open shared object file: No such file or directory!
+TARGET CUDA RTL --> Failed to load CUDA shared library
+omptarget --> No devices supported in this RTL
+omptarget --> Attempting to load library 'libomptarget.rtl.amdgpu.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.amdgpu.so'!
+TARGET AMDGPU RTL --> Unable to load library 'libhsa-runtime64.so': libhsa-runtime64.so: cannot open shared object file: No such file or directory!
+TARGET AMDGPU RTL --> Failed to initialize AMDGPU's HSA library
+omptarget --> No devices supported in this RTL
+omptarget --> Attempting to load library 'libomptarget.rtl.vortex.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.vortex.so'!
+omptarget --> Registered 'libomptarget.rtl.vortex.so' with 1 plugin visible devices!
+omptarget --> RTLs loaded!
+omptarget --> Image 0x00005c7dc7f5d0e0 is NOT compatible with RTL libomptarget.rtl.x86_64.so!
+omptarget --> Image 0x00005c7dc7f5d0e0 is compatible with RTL libomptarget.rtl.vortex.so!
+fish: Job 1, 'LIBOMPTARGET_DEBUG=1 ./host-omp' terminated by signal SIGSEGV (Address boundary error)
+```

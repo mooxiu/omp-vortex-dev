@@ -14,10 +14,10 @@ cd /your/path/to/llvm
 mkdir build && cd build
 
 cmake -G "Ninja" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld" \
-  -DLLVM_ENABLE_RUNTIMES="openmp" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$HOME/llvm \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DLIBOMPTARGET_ENABLE_DEBUG=ON \
   ../llvm
 
@@ -213,7 +213,12 @@ By pass back and forth between the driver and CLW, we can finally make it compil
 ## New Issue: 
 After running the compiled binary, I find it fail with SIGSEGV.
 
-By checking the log:
+Running with debug mode:
+```sh
+LIBOMPTARGET_DEBUG=1 ./{BINARY_FILE}
+```
+
+Checking the log:
 ```
 omptarget --> Init offload library!
 OMPT --> Entering connectLibrary (libomp)
@@ -250,3 +255,8 @@ omptarget --> Image 0x00005c7dc7f5d0e0 is NOT compatible with RTL libomptarget.r
 omptarget --> Image 0x00005c7dc7f5d0e0 is compatible with RTL libomptarget.rtl.vortex.so!
 fish: Job 1, 'LIBOMPTARGET_DEBUG=1 ./host-omp' terminated by signal SIGSEGV (Address boundary error)
 ```
+
+The problem lies in vortex plugin: `openmp/libomptarget/plugins-nextgen/vortex/src/rtl.cpp`,
+method `initImpl` of `VortextDeviceTy` overrides the `GeneralDeviceTy`'s init function,
+but failed in `int ret = vx_dev_open(&DeviceHandle);`
+

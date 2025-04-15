@@ -210,7 +210,7 @@ if (Error Err = executeCommands(*ClangPath, CmdArgs))
 
 By pass back and forth between the driver and CLW, we can finally make it compiled.
 
-## New Issue: 
+## SEGFAULT: 
 After running the compiled binary, I find it fail with SIGSEGV.
 
 Running with debug mode:
@@ -219,7 +219,7 @@ LIBOMPTARGET_DEBUG=1 ./{BINARY_FILE}
 ```
 
 Checking the log:
-```
+```log
 omptarget --> Init offload library!
 OMPT --> Entering connectLibrary (libomp)
 OMPT --> OMPT: Trying to load library libomp.so
@@ -260,3 +260,82 @@ The problem lies in vortex plugin: `openmp/libomptarget/plugins-nextgen/vortex/s
 method `initImpl` of `VortextDeviceTy` overrides the `GeneralDeviceTy`'s init function,
 but failed in `int ret = vx_dev_open(&DeviceHandle);`
 
+```log
+haruka@haruka-ubuntu:~/Documents/workspace/vortex/build$ ./ci/blackbox.sh --cores=2 --app=omp_hello
+CONFIGS=-DNUM_CORES=2
+Running: CONFIGS="-DNUM_CORES=2" make -C ./ci/../runtime/simx > /dev/null
+Running: make -C ./ci/../tests/openmp/omp_hello run-simx
+make: Entering directory '/home/haruka/Documents/workspace/vortex/build/tests/openmp/omp_hello'
+LIBOMPTARGET_DEBUG=1 \
+LD_LIBRARY_PATH=/home/haruka/llvm/lib:/home/haruka/Documents/workspace/vortex/build/runtime:/home/haruka/tools/llvm-vortex/lib:/snap/alacritty/149/usr/lib/x86_64-linu
+x-gnu/dri  \
+VORTEX_DRIVER=simx ./omp_hello
+omptarget --> Init offload library!
+OMPT --> Entering connectLibrary (libomp)
+OMPT --> OMPT: Trying to load library libomp.so
+OMPT --> OMPT: Trying to get address of connection routine ompt_libomp_connect
+OMPT --> OMPT: Library connection handle = 0x792aaaed0400
+OMPT --> Exiting connectLibrary (libomp)
+omptarget --> Loading RTLs...
+omptarget --> Attempting to load library 'libomptarget.rtl.x86_64.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.x86_64.so'!
+OMPT --> OMPT: Entering connectLibrary (libomptarget)
+OMPT --> OMPT: Trying to load library libomptarget.so
+OMPT --> OMPT: Trying to get address of connection routine ompt_libomptarget_connect
+OMPT --> OMPT: Library connection handle = 0x792aaad1e610
+OMPT --> Enter ompt_libomptarget_connect
+OMPT --> Leave ompt_libomptarget_connect
+OMPT --> OMPT: Exiting connectLibrary (libomptarget)
+omptarget --> Registered 'libomptarget.rtl.x86_64.so' with 4 plugin visible devices!
+omptarget --> Attempting to load library 'libomptarget.rtl.cuda.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.cuda.so'!
+TARGET CUDA RTL --> Unable to load library 'libcuda.so': libcuda.so: cannot open shared object file: No such file or directory!
+TARGET CUDA RTL --> Failed to load CUDA shared library
+omptarget --> No devices supported in this RTL
+omptarget --> Attempting to load library 'libomptarget.rtl.amdgpu.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.amdgpu.so'!
+TARGET AMDGPU RTL --> Unable to load library 'libhsa-runtime64.so': libhsa-runtime64.so: cannot open shared object file: No such file or directory!
+TARGET AMDGPU RTL --> Failed to initialize AMDGPU's HSA library
+omptarget --> No devices supported in this RTL
+omptarget --> Attempting to load library 'libomptarget.rtl.vortex.so'...
+omptarget --> Successfully loaded library 'libomptarget.rtl.vortex.so'!
+omptarget --> Registered 'libomptarget.rtl.vortex.so' with 1 plugin visible devices!
+omptarget --> RTLs loaded!
+omptarget --> Image 0x0000641ebe0290e0 is NOT compatible with RTL libomptarget.rtl.x86_64.so!
+omptarget --> Image 0x0000641ebe0290e0 is compatible with RTL libomptarget.rtl.vortex.so!
+TARGET VORTEX RTL --> Implementing vx_dev_open with dlsym(vx_dev_open) -> 0x792aab295ac0
+TARGET VORTEX RTL --> Implementing vx_dev_close with dlsym(vx_dev_close) -> 0x792aab2959c0
+TARGET VORTEX RTL --> Implementing vx_dev_caps with dlsym(vx_dev_caps) -> 0x792aab295a00
+TARGET VORTEX RTL --> Implementing vx_mem_alloc with dlsym(vx_mem_alloc) -> 0x792aab295a10
+TARGET VORTEX RTL --> Implementing vx_mem_reserve with dlsym(vx_mem_reserve) -> 0x792aab295a20
+TARGET VORTEX RTL --> Implementing vx_mem_free with dlsym(vx_mem_free) -> 0x792aab295a30
+TARGET VORTEX RTL --> Implementing vx_mem_access with dlsym(vx_mem_access) -> 0x792aab295a40
+TARGET VORTEX RTL --> Implementing vx_mem_address with dlsym(vx_mem_address) -> 0x792aab295a50
+TARGET VORTEX RTL --> Implementing vx_mem_info with dlsym(vx_mem_info) -> 0x792aab295a60
+TARGET VORTEX RTL --> Implementing vx_copy_to_dev with dlsym(vx_copy_to_dev) -> 0x792aab295a70
+TARGET VORTEX RTL --> Implementing vx_copy_from_dev with dlsym(vx_copy_from_dev) -> 0x792aab295a80
+TARGET VORTEX RTL --> Implementing vx_start with dlsym(vx_start) -> 0x792aab2961a0
+TARGET VORTEX RTL --> Implementing vx_ready_wait with dlsym(vx_ready_wait) -> 0x792aab295a90
+TARGET VORTEX RTL --> Implementing vx_dcr_read with dlsym(vx_dcr_read) -> 0x792aab295aa0
+TARGET VORTEX RTL --> Implementing vx_dcr_write with dlsym(vx_dcr_write) -> 0x792aab295ab0
+TARGET VORTEX RTL --> Implementing vx_mpm_query with dlsym(vx_mpm_query) -> 0x792aab296220
+TARGET VORTEX RTL --> Implementing vx_upload_kernel_bytes with dlsym(vx_upload_kernel_bytes) -> 0x792aab296420
+TARGET VORTEX RTL --> Implementing vx_upload_kernel_file with dlsym(vx_upload_kernel_file) -> 0x792aab299a80
+TARGET VORTEX RTL --> Implementing vx_check_occupancy with dlsym(vx_check_occupancy) -> 0x792aab299470
+TARGET VORTEX RTL --> Implementing vx_dump_perf with dlsym(vx_dump_perf) -> 0x792aab296690
+omptarget --> Plugin adaptor 0x0000641ef9cd8250 has index 0, exposes 1 out of 1 devices!
+omptarget --> Registering image 0x0000641ebe0290e0 with RTL libomptarget.rtl.vortex.so!
+omptarget --> Done registering entries!
+omptarget --> Entering target region for device -1 with entry point 0x0000641ebe02901b
+omptarget --> Default TARGET OFFLOAD policy is now mandatory (devices were found)
+omptarget --> Use default device id 0
+omptarget --> Call to omp_get_num_devices returning 1
+omptarget --> Call to omp_get_num_devices returning 1
+omptarget --> Call to omp_get_initial_device returning 1
+PluginInterface --> Load data from image 0x0000641ebe0290e0
+PluginInterface --> Missing symbol __omp_rtl_device_environment, continue execution anyway.
+PluginInterface --> Failure to allocate device memory for global memory pool: Failed to allocate from memory manager
+PluginInterface --> Skip the memory pool as there is no tracker symbol in the image.Segmentation fault (core dumped)
+make: *** [../common.mk:42: run-simx] Error 139
+make: Leaving directory '/home/haruka/Documents/workspace/vortex/build/tests/openmp/omp_hello'
+```
